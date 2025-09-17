@@ -1,0 +1,42 @@
+/* Style for the main assets table */
+.table-striped {
+    border: 1px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+/* Style for the table header */
+.table-striped thead th {
+    background-color: #f8f9fa;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600; /* Make header text bolder */
+}
+
+/* Style for the "Add New Asset" button */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* Style for the "View Details" and "Delete" buttons */
+.btn-default {
+    border-color: #ccc;
+    color: #333;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+/* Add some hover effects for buttons */
+.btn:hover {
+    opacity: 0.8;
+}
+
+/* Style for the "No assets found" message */
+.alert-info {
+    background-color: #e2f3fb;
+    border-color: #bce8f1;
+    color: #31708f;
+}

@@ -1,0 +1,28 @@
+.ticket-asset-linking {
+    margin: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}
+
+.admin-tabs {
+    margin-bottom: 20px;
+}
+/*
+ * Styles for the Assets table on the Admin Client Summary Page
+*/
+
+/* Styles the main title bar of the assets box */
+.clientssummarybox .title {
+    background-color: #1a4d80;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* Styles the header row of the table inside the box */
+.clientssummarybox .table > thead > tr > th {
+    background-color: #1a4d80;
+    color: #ffffff;
+    border-bottom: 1px solid #1a4d80;
+}
