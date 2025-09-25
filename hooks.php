@@ -4,6 +4,8 @@ if (!defined("WHMCS")) {
 }
 
 use WHMCS\Database\Capsule;
+use WHMCS\View\Menu\Item as MenuItem;
+use WHMCS\Authentication\CurrentUser;
 
 // Hook function for the Admin Area Client Summary Page
 function asset_manager_admin_summary_hook($vars)
@@ -104,24 +106,29 @@ function asset_manager_admin_head_hook($vars)
     return '<link rel="stylesheet" href="modules/addons/asset_manager/assets/css/summary.css">' . $script;
 }
 
-// Hook function to add a menu item to the client area navbar
-function asset_manager_navbar_hook($primaryNavbar)
-{
-    // The database is not available in this hook, so we cannot check the module setting.
-    // The menu item will always be visible, but the linked pages are still protected.
-    if ($primaryNavbar) {
-        $primaryNavbar->addChild('My Assets', [
-            'label' => 'My Assets',
-            'uri' => 'index.php?m=asset_manager&action=assets',
-            'order' => 70,
-            'icon' => 'fa-hdd-o',
-        ]);
-    }
-}
-
 // Register all hooks
 add_hook('AdminAreaClientSummaryPage', 1, 'asset_manager_admin_summary_hook');
 add_hook('AdminAreaViewTicketPage', 300, 'asset_manager_ticket_link_hook');
 add_hook('ClientAreaHeadOutput', 1, 'asset_manager_client_css_hook');
 add_hook('AdminAreaHeadOutput', 1, 'asset_manager_admin_head_hook');
-add_hook('ClientAreaPrimaryNavbar', 1, 'asset_manager_navbar_hook');
+
+// Hook to add the "My Assets" menu item conditionally
+add_hook('ClientAreaPrimaryNavbar', 1, function(MenuItem $primaryNavbar) {
+    // Check if there is a logged-in client
+    if (isset($_SESSION['uid'])) {
+        // Check if the module is set to be visible in the client area
+        $showInClientArea = Capsule::table('tbladdonmodules')
+            ->where('module', 'asset_manager')
+            ->where('setting', 'showInClientArea')
+            ->value('value');
+
+        if ($showInClientArea === 'on') {
+            // Add a new top-level menu item
+            $primaryNavbar->addChild('my-assets-link', [
+                'label' => 'My Assets',
+                'uri' => 'index.php?m=asset_manager',
+                'order' => 70, // This controls the position in the navbar
+            ]);
+        }
+    }
+});
