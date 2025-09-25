@@ -26,4 +26,4 @@
     </div>
 </div>
 
-<a href="index.php?m=asset_manager&action=assets" class="btn btn-default">Back to Assets</a>
+<a href="{$modulelink}&action=assets" class="btn btn-default">Back to Assets</a>

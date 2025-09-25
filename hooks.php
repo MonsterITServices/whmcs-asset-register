@@ -94,7 +94,7 @@ function asset_manager_admin_head_hook($vars)
 {
     $script = '<script type="text/javascript">
         $(document).ready(function() {
-            var targetContainer = $(\'#clientsummarycontainer\\' );
+            var targetContainer = $(\'#clientsummarycontainer\');
             var assetPanel = $(\'#assetManagerSummaryPanel\');
             if (assetPanel.length && targetContainer.length) {
                 assetPanel.appendTo(targetContainer);
@@ -104,8 +104,24 @@ function asset_manager_admin_head_hook($vars)
     return '<link rel="stylesheet" href="modules/addons/asset_manager/assets/css/summary.css">' . $script;
 }
 
+// Hook function to add a menu item to the client area navbar
+function asset_manager_navbar_hook($primaryNavbar)
+{
+    // The database is not available in this hook, so we cannot check the module setting.
+    // The menu item will always be visible, but the linked pages are still protected.
+    if ($primaryNavbar) {
+        $primaryNavbar->addChild('My Assets', [
+            'label' => 'My Assets',
+            'uri' => 'index.php?m=asset_manager&action=assets',
+            'order' => 70,
+            'icon' => 'fa-hdd-o',
+        ]);
+    }
+}
+
 // Register all hooks
 add_hook('AdminAreaClientSummaryPage', 1, 'asset_manager_admin_summary_hook');
 add_hook('AdminAreaViewTicketPage', 300, 'asset_manager_ticket_link_hook');
 add_hook('ClientAreaHeadOutput', 1, 'asset_manager_client_css_hook');
 add_hook('AdminAreaHeadOutput', 1, 'asset_manager_admin_head_hook');
+add_hook('ClientAreaPrimaryNavbar', 1, 'asset_manager_navbar_hook');

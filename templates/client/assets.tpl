@@ -5,14 +5,14 @@
 {/if}
 
 {if $allow_add}
-<a href="index.php?m=asset_manager&action=add-asset" class="btn btn-primary">
+<a href="{$modulelink}&action=add-asset" class="btn btn-primary">
     <i class="fas fa-plus"></i> Add New Asset
 </a>
 <br /><br />
 {/if}
 
 {if $assets->count()}
-    <form action="" method="get" class="form-inline">
+    <form action="{$modulelink}" method="get" class="form-inline">
         <input type="hidden" name="m" value="asset_manager">
         <input type="hidden" name="action" value="assets">
         <div class="form-group">
@@ -44,9 +44,9 @@
                     <td>{$asset.serial_number}</td>
                     <td>{$asset.status}</td>
                     <td class="text-right">
-                        <a href="index.php?m=asset_manager&action=view-asset&id={$asset.id}" class="btn btn-sm btn-default">View Details</a>
+                        <a href="{$modulelink}&action=view-asset&id={$asset.id}" class="btn btn-sm btn-default">View Details</a>
                         {if $allow_delete}
-                        <a href="index.php?m=asset_manager&action=delete-asset&id={$asset.id}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this asset?')">Delete</a>
+                        <a href="{$modulelink}&action=delete-asset&id={$asset.id}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this asset?')">Delete</a>
                         {/if}
                     </td>
                 </tr>

@@ -18,7 +18,7 @@ class ClientDispatcher
         } else {
             return [
                 'pagetitle' => 'Not Found',
-                'templatefile' => 'error',
+                'templatefile' => 'error.tpl', // Use a standard error template
                 'vars' => ['message' => 'The requested page was not found.'],
             ];
         }
@@ -28,14 +28,16 @@ class ClientDispatcher
     {
         $currentUser = new CurrentUser();
         $client = $currentUser->client();
+        $modulelink = $vars['modulelink'];
 
         if (!$client) {
             return [
                 'pagetitle' => 'My Assets',
-                'templatefile' => 'asset_manager/templates/client/assets',
+                'templatefile' => 'templates/client/assets',
                 'vars' => [
                     'assets' => collect(),
-                    'error' => 'You must be logged in to view your assets.'
+                    'error' => 'You must be logged in to view your assets.',
+                    'modulelink' => $modulelink,
                 ],
             ];
         }
@@ -47,7 +49,6 @@ class ClientDispatcher
         $page = isset($_REQUEST['page']) ? (int)$_REQUEST['page'] : 1;
 
         $assetQuery = Asset::where('userid', $client->id)->with('type');
-
         $totalResults = $assetQuery->count();
 
         if ($perPage !== 'all') {
@@ -64,15 +65,15 @@ class ClientDispatcher
                 $pagination .= '<ul class="pagination">';
                 if ($page > 1) {
                     $prevPage = $page - 1;
-                    $pagination .= '<li><a href="index.php?m=asset_manager&action=assets&page=' . $prevPage . '&per_page=' . $perPage . '">&laquo;</a></li>';
+                    $pagination .= '<li><a href="' . $modulelink . '&action=assets&page=' . $prevPage . '&per_page=' . $perPage . '">&laquo;</a></li>';
                 }
                 for ($i = 1; $i <= $totalPages; $i++) {
                     $active = ($i == $page) ? 'class="active"' : '';
-                    $pagination .= '<li ' . $active . '><a href="index.php?m=asset_manager&action=assets&page=' . $i . '&per_page=' . $perPage . '">' . $i . '</a></li>';
+                    $pagination .= '<li ' . $active . '><a href="' . $modulelink . '&action=assets&page=' . $i . '&per_page=' . $perPage . '">' . $i . '</a></li>';
                 }
                 if ($page < $totalPages) {
                     $nextPage = $page + 1;
-                    $pagination .= '<li><a href="index.php?m=asset_manager&action=assets&page=' . $nextPage . '&per_page=' . $perPage . '">&raquo;</a></li>';
+                    $pagination .= '<li><a href="' . $modulelink . '&action=assets&page=' . $nextPage . '&per_page=' . $perPage . '">&raquo;</a></li>';
                 }
                 $pagination .= '</ul>';
             }
@@ -80,14 +81,15 @@ class ClientDispatcher
 
         return [
             'pagetitle' => 'My Assets',
-            'breadcrumb' => ['index.php?m=asset_manager&action=assets' => 'My Assets'],
-            'templatefile' => 'asset_manager/templates/client/assets',
+            'breadcrumb' => [$modulelink . '&action=assets' => 'My Assets'],
+            'templatefile' => 'templates/client/assets',
             'vars' => [
                 'assets' => $assets,
                 'allow_add' => $settings['allow_client_add'] === 'on',
                 'allow_delete' => $settings['allow_client_delete'] === 'on',
                 'per_page' => $perPage,
                 'pagination' => $pagination,
+                'modulelink' => $modulelink,
             ],
         ];
     }
@@ -97,25 +99,26 @@ class ClientDispatcher
         $currentUser = new CurrentUser();
         $client = $currentUser->client();
         $assetId = (int)$_REQUEST['id'];
+        $modulelink = $vars['modulelink'];
 
         if (!$client) {
-            return [ 'pagetitle' => 'Error', 'templatefile' => 'error', 'vars' => ['message' => 'Access Denied'], ];
+            return [ 'pagetitle' => 'Error', 'templatefile' => 'error.tpl', 'vars' => ['message' => 'Access Denied'], ];
         }
 
         $asset = Asset::where('id', $assetId)->where('userid', $client->id)->with('type', 'customFields.customField')->first();
 
         if (!$asset) {
-            return [ 'pagetitle' => 'Asset Not Found', 'templatefile' => 'error', 'vars' => ['message' => 'The requested asset was not found.'], ];
+            return [ 'pagetitle' => 'Asset Not Found', 'templatefile' => 'error.tpl', 'vars' => ['message' => 'The requested asset was not found.'], ];
         }
 
         return [
             'pagetitle' => $asset->name,
             'breadcrumb' => [
-                'index.php?m=asset_manager&action=assets' => 'My Assets',
-                'index.php?m=asset_manager&action=view-asset&id=' . $asset->id => $asset->name,
+                $modulelink . '&action=assets' => 'My Assets',
+                $modulelink . '&action=view-asset&id=' . $asset->id => $asset->name,
             ],
-            'templatefile' => 'asset_manager/templates/client/asset_view',
-            'vars' => [ 'asset' => $asset, ],
+            'templatefile' => 'templates/client/asset_view',
+            'vars' => [ 'asset' => $asset, 'modulelink' => $modulelink, ],
         ];
     }
 
@@ -123,19 +126,19 @@ class ClientDispatcher
     {
         $settings = Capsule::table('tbladdonmodules')->where('module', 'asset_manager')->get()->pluck('value', 'setting')->all();
         if ($settings['allow_client_add'] !== 'on') {
-            return [ 'pagetitle' => 'Error', 'templatefile' => 'error', 'vars' => ['message' => 'Access Denied'], ];
+            return [ 'pagetitle' => 'Error', 'templatefile' => 'error.tpl', 'vars' => ['message' => 'Access Denied'], ];
         }
-
+        $modulelink = $vars['modulelink'];
         $asset_types = AssetType::with('customFields')->get();
 
         return [
             'pagetitle' => 'Add New Asset',
             'breadcrumb' => [
-                'index.php?m=asset_manager&action=assets' => 'My Assets',
-                'index.php?m=asset_manager&action=add-asset' => 'Add Asset',
+                $modulelink . '&action=assets' => 'My Assets',
+                $modulelink . '&action=add-asset' => 'Add Asset',
             ],
-            'templatefile' => 'asset_manager/templates/client/add_asset',
-            'vars' => [ 'asset_types' => $asset_types, ],
+            'templatefile' => 'templates/client/add_asset',
+            'vars' => [ 'asset_types' => $asset_types, 'modulelink' => $modulelink, ],
         ];
     }
 
@@ -143,11 +146,12 @@ class ClientDispatcher
     {
         $settings = Capsule::table('tbladdonmodules')->where('module', 'asset_manager')->get()->pluck('value', 'setting')->all();
         if ($settings['allow_client_add'] !== 'on') {
-            return [ 'pagetitle' => 'Error', 'templatefile' => 'error', 'vars' => ['message' => 'Access Denied'], ];
+            return [ 'pagetitle' => 'Error', 'templatefile' => 'error.tpl', 'vars' => ['message' => 'Access Denied'], ];
         }
 
         $currentUser = new CurrentUser();
         $client = $currentUser->client();
+        $modulelink = $vars['modulelink'];
 
         if (!$client) { return; }
 
@@ -159,7 +163,7 @@ class ClientDispatcher
         $asset->status = 'Active'; // Default status for client-added assets
         $asset->save();
 
-        header('Location: index.php?m=asset_manager');
+        header('Location: ' . $modulelink);
         exit;
     }
 
@@ -167,12 +171,13 @@ class ClientDispatcher
     {
         $settings = Capsule::table('tbladdonmodules')->where('module', 'asset_manager')->get()->pluck('value', 'setting')->all();
         if ($settings['allow_client_delete'] !== 'on') {
-            return [ 'pagetitle' => 'Error', 'templatefile' => 'error', 'vars' => ['message' => 'Access Denied'], ];
+            return [ 'pagetitle' => 'Error', 'templatefile' => 'error.tpl', 'vars' => ['message' => 'Access Denied'], ];
         }
 
         $currentUser = new CurrentUser();
         $client = $currentUser->client();
         $assetId = (int)$_REQUEST['id'];
+        $modulelink = $vars['modulelink'];
 
         if (!$client) { return; }
 
@@ -181,7 +186,7 @@ class ClientDispatcher
             $asset->delete();
         }
 
-        header('Location: index.php?m=asset_manager');
+        header('Location: ' . $modulelink);
         exit;
     }
 }

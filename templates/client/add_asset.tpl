@@ -1,4 +1,4 @@
-<form action="index.php?m=asset_manager&action=save-asset" method="post">
+<form action="{$modulelink}&action=save-asset" method="post">
     <div class="form-group">
         <label for="asset_type_id">Asset Type</label>
         <select name="asset_type_id" id="asset_type_id" class="form-control">
@@ -19,5 +19,5 @@
     </div>
 
     <button type="submit" class="btn btn-primary">Save Asset</button>
-    <a href="index.php?m=asset_manager" class="btn btn-default">Cancel</a>
+    <a href="{$modulelink}" class="btn btn-default">Cancel</a>
 </form>

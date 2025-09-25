@@ -52,15 +52,6 @@ function asset_manager_output($vars)
  */
 function asset_manager_clientarea($vars)
 {
-    $showInClientArea = \WHMCS\Database\Capsule::table('tbladdonmodules')
-        ->where('module', 'asset_manager')
-        ->where('setting', 'showInClientArea')
-        ->value('value');
-
-    if ($showInClientArea !== 'on') {
-        return;
-    }
-
     $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : 'assets';
     $dispatcher = new \WHMCS\Module\Addon\AssetManager\Client\ClientDispatcher();
     return $dispatcher->dispatch($action, $vars);
