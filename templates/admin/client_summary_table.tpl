@@ -1,5 +1,17 @@
-<div class="clientssummarybox">
+<div class="clientssummarybox" id="assetManagerSummaryPanel">
     <div class="title">Assets</div>
+    <form action="clientssummary.php" method="get" class="form-inline pull-right">
+        <input type="hidden" name="userid" value="{$userid}">
+        <div class="form-group">
+            <label for="assets_per_page">Show:</label>
+            <select name="assets_per_page" id="assets_per_page" class="form-control input-sm" onchange="this.form.submit()">
+                <option value="10" {if $per_page == 10}selected{/if}>10</option>
+                <option value="25" {if $per_page == 25}selected{/if}>25</option>
+                <option value="50" {if $per_page == 50}selected{/if}>50</option>
+                <option value="all" {if $per_page == 'all'}selected{/if}>All</option>
+            </select>
+        </div>
+    </form>
     <div class="table-responsive">
         <table class="table table-striped">
             <thead>
@@ -31,6 +43,9 @@
                 {/foreach}
             </tbody>
         </table>
+    </div>
+    <div class="text-center">
+        {$pagination nofilter}
     </div>
     <a href="addonmodules.php?module=asset_manager&action=add-asset&userid={$userid}" class="btn btn-primary btn-sm">
         <i class="fas fa-plus"></i> Add New Asset

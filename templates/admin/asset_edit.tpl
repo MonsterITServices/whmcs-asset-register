@@ -16,6 +16,16 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="contact_id">Contact</label>
+                    <select name="contact_id" id="contact_id" class="form-control">
+                        <option value="">None</option>
+                        {foreach from=$contacts item=contact}
+                            <option value="{$contact.id}" {if $asset->contact_id == $contact.id}selected{/if}>{$contact.firstname} {$contact.lastname} ({$contact.email})</option>
+                        {/foreach}
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label for="asset_type_id">Asset Type</label>
                     <select name="asset_type_id" id="asset_type_id" class="form-control">
                         {foreach from=$asset_types item=type}

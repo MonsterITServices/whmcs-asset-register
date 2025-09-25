@@ -77,6 +77,12 @@ class AssetManagerActivation
                 });
             }
 
+            if (!Capsule::schema()->hasColumn('mod_asset_manager_assets', 'contact_id')) {
+                Capsule::schema()->table('mod_asset_manager_assets', function ($table) {
+                    $table->integer('contact_id')->nullable()->after('userid');
+                });
+            }
+
             return ['status' => 'success', 'description' => 'Asset Manager module activated successfully.'];
         } catch (Exception $e) {
             return ['status' => 'error', 'description' => 'Error activating Asset Manager module: ' . $e->getMessage()];

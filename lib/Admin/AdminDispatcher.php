@@ -9,6 +9,7 @@ use WHMCS\Module\Addon\AssetManager\Models\Asset;
 use WHMCS\Module\Addon\AssetManager\Models\AssetType;
 use WHMCS\Module\Addon\AssetManager\Models\CustomField;
 use WHMCS\Module\Addon\AssetManager\Models\CustomFieldValue;
+use WHMCS\Module\Addon\AssetManager\Models\TicketLink;
 
 class AdminDispatcher
 {
@@ -57,8 +58,85 @@ class AdminDispatcher
 
     protected function displayAssetsPage($vars)
     {
-        $assets = Asset::with('client', 'type')->get();
-        return $this->render('assets', ['assets' => $assets]);
+        // Get filter and pagination parameters
+        $filterClientId = isset($_REQUEST['filter_client_id']) ? (int)$_REQUEST['filter_client_id'] : null;
+        $filterContactId = isset($_REQUEST['filter_contact_id']) ? (int)$_REQUEST['filter_contact_id'] : null;
+        $perPage = isset($_REQUEST['per_page']) ? $_REQUEST['per_page'] : 10;
+        $page = isset($_REQUEST['page']) ? (int)$_REQUEST['page'] : 1;
+
+        // Start building the asset query
+        $assetQuery = Asset::with('client', 'type');
+
+        // Apply filters
+        if ($filterClientId) {
+            $assetQuery->where('userid', $filterClientId);
+        }
+        if ($filterContactId) {
+            $assetQuery->where('contact_id', $filterContactId);
+        }
+
+        // Get total count for pagination
+        $totalResults = $assetQuery->count();
+
+        // Apply manual pagination
+        if ($perPage !== 'all') {
+            $assetQuery->skip(($page - 1) * $perPage)->take($perPage);
+        }
+
+        $assets = $assetQuery->get();
+        
+        // Manually fetch and attach contact information
+        $contactIds = $assets->pluck('contact_id')->filter()->unique()->toArray();
+        if (!empty($contactIds)) {
+            $contactsData = Capsule::table('tblcontacts')->whereIn('id', $contactIds)->get()->keyBy('id');
+            $assets->each(function ($asset) use ($contactsData) {
+                if (isset($contactsData[$asset->contact_id])) {
+                    $asset->contact = (array) $contactsData[$asset->contact_id];
+                } else {
+                    $asset->contact = null;
+                }
+            });
+        } else {
+            $assets->each(function ($asset) {
+                $asset->contact = null;
+            });
+        }
+
+        // Manually generate pagination links
+        $pagination = '';
+        if ($perPage !== 'all' && $totalResults > 0) {
+            $totalPages = ceil($totalResults / $perPage);
+            if ($totalPages > 1) {
+                $pagination .= '<ul class="pagination">';
+                if ($page > 1) {
+                    $prevPage = $page - 1;
+                    $pagination .= '<li><a href="addonmodules.php?module=asset_manager&action=list&page=' . $prevPage . '&per_page=' . $perPage . '&filter_client_id=' . $filterClientId . '&filter_contact_id=' . $filterContactId . '">&laquo;</a></li>';
+                }
+                for ($i = 1; $i <= $totalPages; $i++) {
+                    $active = ($i == $page) ? 'class="active"' : '';
+                    $pagination .= '<li ' . $active . '><a href="addonmodules.php?module=asset_manager&action=list&page=' . $i . '&per_page=' . $perPage . '&filter_client_id=' . $filterClientId . '&filter_contact_id=' . $filterContactId . '">' . $i . '</a></li>';
+                }
+                if ($page < $totalPages) {
+                    $nextPage = $page + 1;
+                    $pagination .= '<li><a href="addonmodules.php?module=asset_manager&action=list&page=' . $nextPage . '&per_page=' . $perPage . '&filter_client_id=' . $filterClientId . '&filter_contact_id=' . $filterContactId . '">&raquo;</a></li>';
+                }
+                $pagination .= '</ul>';
+            }
+        }
+
+        // Get data for filter dropdowns
+        $clients = Capsule::table('tblclients')->select('id', 'firstname', 'lastname')->get();
+        $contacts = Capsule::table('tblcontacts')->select('id', 'firstname', 'lastname')->get();
+
+        return $this->render('assets', [
+            'assets' => $assets,
+            'clients' => $clients,
+            'contacts' => $contacts,
+            'filter_client_id' => $filterClientId,
+            'filter_contact_id' => $filterContactId,
+            'per_page' => $perPage,
+            'pagination' => $pagination,
+        ]);
     }
 
     protected function displayImportPage($vars = [])
@@ -88,27 +166,40 @@ class AdminDispatcher
 			$clients[] = (array)$client;
 		}
 
+        $contactsData = Capsule::table('tblcontacts')->get();
+        $contacts = [];
+        foreach ($contactsData as $contact) {
+            $contacts[] = (array)$contact;
+        }
+
 		$asset_types = AssetType::with('customFields')->get();
 		return $this->render('add_asset', [
 			'clients' => $clients,
+            'contacts' => $contacts,
 			'asset_types' => $asset_types,
 		]);
 	}
 
     protected function displayEditAssetPage($vars)
 	{
-		$asset = Asset::with('customFields.customField')->find($_REQUEST['id']);
-
+		        $asset = Asset::with('customFields.customField')->find($_REQUEST['id']);
 		$clientsData = Capsule::table('tblclients')->where('status', 'Active')->get();
 		$clients = [];
 		foreach ($clientsData as $client) {
 			$clients[] = (array)$client;
 		}
 
+        $contactsData = Capsule::table('tblcontacts')->where('userid', $asset->userid)->get();
+        $contacts = [];
+        foreach ($contactsData as $contact) {
+            $contacts[] = (array)$contact;
+        }
+
 		$asset_types = AssetType::with('customFields')->get();
 		return $this->render('asset_edit', [
 			'asset' => $asset,
 			'clients' => $clients,
+            'contacts' => $contacts,
 			'asset_types' => $asset_types,
 		]);
 	}
@@ -122,6 +213,7 @@ class AdminDispatcher
         }
 
         $asset->userid = $_POST['user_id'];
+        $asset->contact_id = $_POST['contact_id'];
         $asset->asset_type_id = $_POST['asset_type_id'];
         $asset->name = $_POST['name'];
         $asset->description = $_POST['description'];

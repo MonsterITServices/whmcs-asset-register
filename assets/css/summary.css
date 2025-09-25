@@ -1,21 +1,13 @@
-.ticket-asset-linking {
-    margin: 15px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: #f9f9f9;
+.clientssummarybox {
+    order: 99; /* This will move the box to the bottom of a flex container */
 }
 
-
-
-/* Styles the main title bar of the assets box */
 .clientssummarybox .title {
     background-color: #1a4d80;
     color: #ffffff;
     font-weight: bold;
 }
 
-/* Styles the header row of the table inside the box */
 .clientssummarybox .table > thead > tr > th {
     background-color: #1a4d80;
     color: #ffffff;

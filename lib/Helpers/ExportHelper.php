@@ -25,13 +25,13 @@ class ExportHelper
             });
         });
 
-        $headers = ['ID', 'Client Name', 'Asset Name', 'Asset Type', 'Serial Number', 'Purchase Date', 'Warranty End Date', 'Status'];
+        $headers = ['ID', 'Client Email', 'Asset Name', 'Asset Type', 'Serial Number', 'Purchase Date', 'Warranty End Date', 'Status'];
         fputcsv($output, array_merge($headers, $customFieldHeaders));
 
         foreach ($assets as $asset) {
             $row = [
                 $asset->id,
-                $asset->client->firstname . ' ' . $asset->client->lastname,
+                $asset->client->email,
                 $asset->name,
                 $asset->type->name,
                 $asset->serial_number,

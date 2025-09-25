@@ -12,6 +12,20 @@
 {/if}
 
 {if $assets->count()}
+    <form action="" method="get" class="form-inline">
+        <input type="hidden" name="m" value="asset_manager">
+        <input type="hidden" name="action" value="assets">
+        <div class="form-group">
+            <label for="per_page">Show:</label>
+            <select name="per_page" id="per_page" class="form-control" onchange="this.form.submit()">
+                <option value="10" {if $per_page == 10}selected{/if}>10</option>
+                <option value="25" {if $per_page == 25}selected{/if}>25</option>
+                <option value="50" {if $per_page == 50}selected{/if}>50</option>
+                <option value="all" {if $per_page == 'all'}selected{/if}>All</option>
+            </select>
+        </div>
+    </form>
+    <br>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -39,6 +53,9 @@
             {/foreach}
         </tbody>
     </table>
+    <div class="text-center">
+        {$pagination nofilter}
+    </div>
 {else}
     <div class="alert alert-info">
         No assets found.

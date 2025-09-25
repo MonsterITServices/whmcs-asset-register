@@ -14,6 +14,13 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="contact_id">Contact</label>
+                    <select name="contact_id" id="contact_id" class="form-control">
+                        <option value="">None</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
                     <label for="asset_type_id">Asset Type</label>
                     <select name="asset_type_id" id="asset_type_id" class="form-control">
                         {foreach from=$asset_types item=type}
@@ -159,5 +166,26 @@
 
         assetTypeSelect.addEventListener('change', renderCustomFields);
         renderCustomFields();
+
+        const clientId = document.getElementById('user_id');
+        const contactSelect = document.getElementById('contact_id');
+        const contacts = {$contacts|json_encode};
+
+        function populateContacts() {
+            const selectedClientId = clientId.value;
+            contactSelect.innerHTML = '<option value="">None</option>';
+
+            contacts.forEach(contact => {
+                if (contact.userid == selectedClientId) {
+                    const option = document.createElement('option');
+                    option.value = contact.id;
+                    option.textContent = contact.firstname + ' ' + contact.lastname + ' (' + contact.email + ')';
+                    contactSelect.appendChild(option);
+                }
+            });
+        }
+
+        clientId.addEventListener('change', populateContacts);
+        populateContacts(); // Initial population
     });
 </script>

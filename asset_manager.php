@@ -14,9 +14,9 @@ function asset_manager_config()
     return [
         'name' => 'Asset Manager',
         'description' => 'A module to manage client IT assets.',
-        'author' => 'Gemini',
+        'author' => 'Monster IT Services Ltd',
         'language' => 'english',
-        'version' => 'FINAL', // The final, working version
+        'version' => '3.6', 
         'fields' => []
     ];
 }

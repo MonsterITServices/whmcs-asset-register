@@ -13,6 +13,46 @@
 
 <br /><br />
 
+<form action="" method="get" class="form-inline">
+    <input type="hidden" name="module" value="asset_manager">
+    <input type="hidden" name="action" value="list">
+
+    <div class="form-group">
+        <label for="filter_client_id">Client</label>
+        <select name="filter_client_id" id="filter_client_id" class="form-control">
+            <option value="">- All Clients -</option>
+            {foreach from=$clients item=client}
+                <option value="{$client->id}" {if $filter_client_id == $client->id}selected{/if}>{$client->firstname} {$client->lastname}</option>
+            {/foreach}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="filter_contact_id">Contact</label>
+        <select name="filter_contact_id" id="filter_contact_id" class="form-control">
+            <option value="">- All Contacts -</option>
+            {foreach from=$contacts item=contact}
+                <option value="{$contact->id}" {if $filter_contact_id == $contact->id}selected{/if}>{$contact->firstname} {$contact->lastname}</option>
+            {/foreach}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="per_page">Per Page</label>
+        <select name="per_page" id="per_page" class="form-control">
+            <option value="10" {if $per_page == 10}selected{/if}>10</option>
+            <option value="25" {if $per_page == 25}selected{/if}>25</option>
+            <option value="50" {if $per_page == 50}selected{/if}>50</option>
+            <option value="100" {if $per_page == 100}selected{/if}>100</option>
+            <option value="all" {if $per_page == 'all'}selected{/if}>All</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="addonmodules.php?module=asset_manager&action=list" class="btn btn-default">Clear</a>
+</form>
+<br>
+
 {if $assets->count()}
     <table class="table table-striped">
         <thead>
@@ -20,6 +60,7 @@
                 <th>ID</th>
                 <th>Asset Name</th>
                 <th>Client Name</th>
+                <th>Contact</th>
                 <th>Asset Type</th>
                 <th>Serial Number</th>
                 <th>Status</th>
@@ -32,6 +73,13 @@
                     <td>{$asset.id}</td>
                     <td>{$asset.name}</td>
                     <td><a href="clientssummary.php?userid={$asset.client.id}">{$asset.client.firstname} {$asset.client.lastname}</a></td>
+                    <td>
+                        {if $asset.contact}
+                            <a href="clientscontacts.php?userid={$asset.client.id}&contactid={$asset.contact.id}">{$asset.contact.firstname} {$asset.contact.lastname}</a>
+                        {else}
+                            N/A
+                        {/if}
+                    </td>
                     <td>{$asset->type->name}</td>
                     <td>{$asset.serial_number}</td>
                     <td>{$asset.status}</td>
@@ -43,6 +91,11 @@
             {/foreach}
         </tbody>
     </table>
+
+    <div class="text-center">
+        {$pagination nofilter}
+    </div>
+
 {else}
     <div class="alert alert-info">
         No assets found.

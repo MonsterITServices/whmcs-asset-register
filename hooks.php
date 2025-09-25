@@ -4,83 +4,70 @@ if (!defined("WHMCS")) {
 }
 
 use WHMCS\Database\Capsule;
-use WHMCS\Module\Addon\AssetManager\Models\Asset;
-use WHMCS\Module\Addon\AssetManager\Models\TicketLink;
 
-/**
- * This hook adds the asset table directly to the client's summary page in the admin area.
- */
-add_hook('AdminAreaClientSummaryPage', 99, function($vars) {
+// Hook function for the Admin Area Client Summary Page
+function asset_manager_admin_summary_hook($vars)
+{
     try {
         $userId = (int)$vars['userid'];
-        $assets = Asset::where('userid', $userId)->with('type')->get();
-
+        $perPage = isset($_REQUEST['assets_per_page']) ? $_REQUEST['assets_per_page'] : 10;
+        $page = isset($_REQUEST['assets_page']) ? (int)$_REQUEST['assets_page'] : 1;
+        $assetQuery = \WHMCS\Module\Addon\AssetManager\Models\Asset::where('userid', $userId)->with('type');
+        $totalResults = $assetQuery->count();
+        if ($perPage !== 'all') {
+            $assetQuery->skip(($page - 1) * $perPage)->take($perPage);
+        }
+        $assets = $assetQuery->get();
+        $pagination = '';
+        if ($perPage !== 'all' && $totalResults > 0) {
+            $totalPages = ceil($totalResults / $perPage);
+            if ($totalPages > 1) {
+                $pagination .= '<ul class="pagination">';
+                if ($page > 1) {
+                    $prevPage = $page - 1;
+                    $pagination .= '<li><a href="clientssummary.php?userid=' . $userId . '&assets_page=' . $prevPage . '&assets_per_page=' . $perPage . '">&laquo;</a></li>';
+                }
+                for ($i = 1; $i <= $totalPages; $i++) {
+                    $active = ($i == $page) ? 'class="active"' : '';
+                    $pagination .= '<li ' . $active . '><a href="clientssummary.php?userid=' . $userId . '&assets_page=' . $i . '&assets_per_page=' . $perPage . '">' . $i . '</a></li>';
+                }
+                if ($page < $totalPages) {
+                    $nextPage = $page + 1;
+                    $pagination .= '<li><a href="clientssummary.php?userid=' . $userId . '&assets_page=' . $nextPage . '&assets_per_page=' . $perPage . '">&raquo;</a></li>';
+                }
+                $pagination .= '</ul>';
+            }
+        }
         $smarty = new \Smarty();
         $smarty->assign('assets', $assets);
         $smarty->assign('userid', $userId);
-
+        $smarty->assign('per_page', $perPage);
+        $smarty->assign('pagination', $pagination);
         $templatePath = __DIR__ . '/templates/admin/client_summary_table.tpl';
         if (file_exists($templatePath)) {
             return $smarty->fetch($templatePath);
         }
         return '<div class="errorbox">Asset Manager Error: client_summary_table.tpl not found.</div>';
-
     } catch (\Exception $e) {
         return '<div class="errorbox">Asset Manager Error: ' . $e->getMessage() . '</div>';
     }
-});
+}
 
-/**
- * This hook adds the "My Assets" panel to the client area dashboard.
- */
-add_hook('ClientAreaHomepagePanels', 1, function ($vars) {
-    if (!isset($vars['panels']) || is_null($vars['panels'])) {
-        return;
-    }
-
-    $showInClientArea = Capsule::table('tbladdonmodules')
-        ->where('module', 'asset_manager')
-        ->where('setting', 'showInClientArea')
-        ->value('value');
-
-    if ($showInClientArea !== 'on') {
-        return;
-    }
-
-    $currentUser = new WHMCS\Authentication\CurrentUser();
-    $client = $currentUser->client();
-    if (!$client) {
-        return;
-    }
-
-    $assetCount = Asset::where('userid', $client->id)->count();
-
-    $newPanel = $vars['panels']->addChild('my-assets-panel', [
-        'name' => 'My Assets',
-        'label' => 'My Assets',
-        'icon' => 'fa-hdd-o',
-        'order' => 100,
-        'bodyHtml' => '<p>You have ' . $assetCount . ' registered asset(s).</p>',
-        'footerHtml' => '<a href="index.php?m=asset_manager" class="btn btn-default btn-sm"><i class="fas fa-desktop"></i> Manage Assets</a>'
-    ]);
-});
-
-/**
- * This hook adds the asset linking feature to the ticket view page.
- */
-add_hook('AdminAreaViewTicketPage', 300, function($vars) {
+// Hook function for the Admin Ticket Page
+function asset_manager_ticket_link_hook($vars)
+{
     $ticketId = $vars['ticketid'];
     $userId = $vars['userid'];
     if (isset($_POST['link_asset_to_ticket'])) {
         $assetId = (int)$_POST['asset_id'];
         if ($assetId > 0) {
-            TicketLink::updateOrCreate(['ticket_id' => $ticketId], ['asset_id' => $assetId]);
+            \WHMCS\Module\Addon\AssetManager\Models\TicketLink::updateOrCreate(['ticket_id' => $ticketId], ['asset_id' => $assetId]);
         } else {
-            TicketLink::where('ticket_id', $ticketId)->delete();
+            \WHMCS\Module\Addon\AssetManager\Models\TicketLink::where('ticket_id', $ticketId)->delete();
         }
     }
-    $linkedAsset = TicketLink::where('ticket_id', $ticketId)->first();
-    $clientAssets = Asset::where('userid', $userId)->get();
+    $linkedAsset = \WHMCS\Module\Addon\AssetManager\Models\TicketLink::where('ticket_id', $ticketId)->first();
+    $clientAssets = \WHMCS\Module\Addon\AssetManager\Models\Asset::where('userid', $userId)->get();
     $options = '<option value="0">-- None --</option>';
     foreach ($clientAssets as $asset) {
         $selected = ($linkedAsset && $linkedAsset->asset_id == $asset->id) ? 'selected' : '';
@@ -92,13 +79,33 @@ add_hook('AdminAreaViewTicketPage', 300, function($vars) {
         <select name="asset_id" id="asset_id" class="form-control">' . $options . '</select>
         <button type="submit" name="link_asset_to_ticket" class="btn btn-primary btn-sm" style="margin-top:10px;">Link Asset</button>
         </div></div></form></div>';
-});
-/**
- * This hook adds the client area CSS to the page header.
- */
-add_hook('ClientAreaHeadOutput', 1, function($vars) {
-    // Check if the current page is part of the asset_manager module
+}
+
+// Hook function for Client Area CSS
+function asset_manager_client_css_hook($vars)
+{
     if (isset($vars['modulename']) && $vars['modulename'] == 'asset_manager') {
         return '<link rel="stylesheet" href="modules/addons/asset_manager/assets/css/client.css">';
     }
-});
+}
+
+// Hook function for Admin Area CSS and JS
+function asset_manager_admin_head_hook($vars)
+{
+    $script = '<script type="text/javascript">
+        $(document).ready(function() {
+            var targetContainer = $(\'#clientsummarycontainer\\' );
+            var assetPanel = $(\'#assetManagerSummaryPanel\');
+            if (assetPanel.length && targetContainer.length) {
+                assetPanel.appendTo(targetContainer);
+            }
+        });
+    </script>';
+    return '<link rel="stylesheet" href="modules/addons/asset_manager/assets/css/summary.css">' . $script;
+}
+
+// Register all hooks
+add_hook('AdminAreaClientSummaryPage', 1, 'asset_manager_admin_summary_hook');
+add_hook('AdminAreaViewTicketPage', 300, 'asset_manager_ticket_link_hook');
+add_hook('ClientAreaHeadOutput', 1, 'asset_manager_client_css_hook');
+add_hook('AdminAreaHeadOutput', 1, 'asset_manager_admin_head_hook');

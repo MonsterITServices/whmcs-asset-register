@@ -25,6 +25,7 @@ class Asset extends Model
         'purchase_date',
         'warranty_end_date',
         'status',
+        'contact_id',
     ];
 
     public function client()

@@ -41,7 +41,42 @@ class ClientDispatcher
         }
 
         $settings = Capsule::table('tbladdonmodules')->where('module', 'asset_manager')->get()->pluck('value', 'setting')->all();
-        $assets = Asset::where('userid', $client->id)->with('type')->get();
+
+        // Pagination logic
+        $perPage = isset($_REQUEST['per_page']) ? $_REQUEST['per_page'] : 10;
+        $page = isset($_REQUEST['page']) ? (int)$_REQUEST['page'] : 1;
+
+        $assetQuery = Asset::where('userid', $client->id)->with('type');
+
+        $totalResults = $assetQuery->count();
+
+        if ($perPage !== 'all') {
+            $assetQuery->skip(($page - 1) * $perPage)->take($perPage);
+        }
+
+        $assets = $assetQuery->get();
+
+        // Manual pagination HTML generation
+        $pagination = '';
+        if ($perPage !== 'all' && $totalResults > 0) {
+            $totalPages = ceil($totalResults / $perPage);
+            if ($totalPages > 1) {
+                $pagination .= '<ul class="pagination">';
+                if ($page > 1) {
+                    $prevPage = $page - 1;
+                    $pagination .= '<li><a href="index.php?m=asset_manager&action=assets&page=' . $prevPage . '&per_page=' . $perPage . '">&laquo;</a></li>';
+                }
+                for ($i = 1; $i <= $totalPages; $i++) {
+                    $active = ($i == $page) ? 'class="active"' : '';
+                    $pagination .= '<li ' . $active . '><a href="index.php?m=asset_manager&action=assets&page=' . $i . '&per_page=' . $perPage . '">' . $i . '</a></li>';
+                }
+                if ($page < $totalPages) {
+                    $nextPage = $page + 1;
+                    $pagination .= '<li><a href="index.php?m=asset_manager&action=assets&page=' . $nextPage . '&per_page=' . $perPage . '">&raquo;</a></li>';
+                }
+                $pagination .= '</ul>';
+            }
+        }
 
         return [
             'pagetitle' => 'My Assets',
@@ -51,6 +86,8 @@ class ClientDispatcher
                 'assets' => $assets,
                 'allow_add' => $settings['allow_client_add'] === 'on',
                 'allow_delete' => $settings['allow_client_delete'] === 'on',
+                'per_page' => $perPage,
+                'pagination' => $pagination,
             ],
         ];
     }
