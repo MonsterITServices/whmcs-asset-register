@@ -16,7 +16,7 @@ function asset_manager_config()
         'description' => 'A module to manage client IT assets.',
         'author' => 'Monster IT Services Ltd',
         'language' => 'english',
-        'version' => '3.6', 
+        'version' => '3.7', 
         'fields' => []
     ];
 }

@@ -36,6 +36,9 @@ class AdminDispatcher
         if ($action === 'save-asset-type') {
             return $this->saveAssetType();
         }
+		if ($action === 'delete-asset-type') {
+			return $this->deleteAssetType();
+		}
         if ($action === 'save-custom-field') {
             return $this->saveCustomField();
         }
@@ -270,7 +273,16 @@ $asset->admin_notes = $_POST['admin_notes'];
         $asset_types = AssetType::all();
         return $this->render('asset_types', ['asset_types' => $asset_types]);
     }
-
+	protected function deleteAssetType()
+	{
+		$assetType = AssetType::find($_REQUEST['id']);
+		if ($assetType) {
+			$assetType->delete();
+			CustomField::where('asset_type_id', $_REQUEST['id'])->delete();
+		}
+		header('Location: ' . $this->getModuleUrl('asset-types'));
+		exit;
+	}
     protected function displayAddAssetTypePage($vars)
     {
         return $this->render('add_asset_type', []);

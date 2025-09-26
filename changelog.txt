@@ -1,0 +1,4 @@
+Changelog - 
+
+Version 3.7 - Added delete function for asset types & delete button smoothing
+Version 3.6 amended client page location and menu to display only when client logged in.
