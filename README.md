@@ -37,31 +37,22 @@
 <p>&nbsp;</p>
 <h2>🛠️ Admin Area Showcase: Your Mission Control</h2>
 <p>&nbsp;This is where the magic happens. A clean, powerful, and intuitive interface for total asset management.</p>
-<p>&nbsp;</p>
 <h4>Add &amp; Edit Assets with Rich Detail</h4>
 <p>&nbsp;Track everything that matters: serial numbers, purchase dates, IP addresses, private admin notes, and more.</p>
-<p>&nbsp;</p>
 <h4>Build Your Own Asset Types</h4>
 <p>&nbsp;Go beyond the defaults. If you need to track "WiFi Access Points" or "VoIP Phones," you can add them in seconds.</p>
-<p>&nbsp;</p>
 <h4>Instant Access from the Client Profile</h4>
 <p>&nbsp;No need to navigate away. The module adds a clean, sortable asset list right onto the client's main profile page.</p>
-<p>&nbsp;</p>
 <h4>Tweak Everything in Settings</h4>
 <p>&nbsp;You are in full control. Enable the client area, allow clients to add/delete assets, and configure warranty notifications with simple checkboxes.</p>
 <hr />
-<p>&nbsp;</p>
 <h2>👤 Client Area Power: Empower Your Customers</h2>
-<p>&nbsp;</p>
 <p>Turn on the client portal to give your customers a self-service window into their own IT inventory.</p>
-<p>&nbsp;</p>
 <h4>Clean "My Assets" Dashboard</h4>
 <p>&nbsp;Clients get a dedicated "My Assets" page to see everything at a glance. They can view details and, if you allow it, manage their own hardware.</p>
-<p>&nbsp;</p>
 <h4>Simple, Intuitive Forms</h4>
 <p>If you enable it, clients can add new assets through a clean, simple form, reducing your admin workload.</p>
 <hr />
-<p>&nbsp;</p>
 <h2>⚙️ Quick Installation (5-Minute Setup)</h2>
 <p>&nbsp;<strong>Upload</strong>: Unzip the package and upload the <code>asset_manager</code> folder to your WHMCS directory at <code>/modules/addons/</code>.</p>
 <ol start="1">
