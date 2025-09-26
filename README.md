@@ -3,7 +3,7 @@ The Asset Manager is a comprehensive addon module for WHMCS that allows you to t
 
 ✨ Key Features
 Complete Asset Lifecycle Management: Create, edit, and delete assets for your clients.
-
+![Complete Asset LifeCycle](screenshots/reg6.png)
 Customizable Asset Types: Define your own asset categories (like Servers, Laptops, etc.) to fit your business needs.
 
 Flexible Custom Fields: Add specific data fields to each asset type for detailed tracking.
